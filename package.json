@@ -1,0 +1,25 @@
+{
+  "name": "entraiot-connect",
+  "version": "1.0.0",
+  "description": "Entraiot Connect — all 3 stages on one server",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "scripts": {
+    "build:stage2": "cd stage2 && npm install && npm run build",
+    "build:stage3": "cd stage3 && npm install && npm run build",
+    "build:prod": "npm run build:stage2 && npm run build:stage3 && mkdir -p dist-vercel && cp -r stage1 dist-vercel/portfolio && cp -r stage2/out dist-vercel/way && cp -r stage3/dist dist-vercel/buildings && echo '<html><head><meta http-equiv=\"refresh\" content=\"0;url=/way\"></head></html>' > dist-vercel/index.html",
+    "build": "npm run build:prod",
+    "start": "cross-env NODE_ENV=production node server.js",
+    "dev": "concurrently --names SERVER,NEXT,VITE --prefix-colors cyan,green,magenta \"node server.js\" \"cd stage2 && npm run dev -- --port 3001\" \"cd stage3 && npx vite --port 3002\""
+  },
+  "dependencies": {
+    "acorn": "^8.16.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^10.1.0",
+    "express": "^4.18.2",
+    "http-proxy-middleware": "^3.0.2",
+    "puppeteer": "^24.42.0"
+  }
+}

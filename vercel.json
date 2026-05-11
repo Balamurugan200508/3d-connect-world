@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/portfolio/(.*)", "destination": "/portfolio/$1" },
+    { "source": "/portfolio", "destination": "/portfolio/index.html" },
+    { "source": "/way/(.*)", "destination": "/way/$1" },
+    { "source": "/way", "destination": "/way/index.html" },
+    { "source": "/buildings/(.*)", "destination": "/buildings/$1" },
+    { "source": "/buildings", "destination": "/buildings/index.html" },
+    { "source": "/", "destination": "/index.html" }
+  ]
+}
