@@ -1,0 +1,13 @@
+# Ignore everything that isn't needed for the final runtime
+stage1/
+stage2/
+stage3/
+animation-assets/
+node_modules/
+.git/
+*.har
+*.js
+!server.js
+!build.js
+!package.json
+!dist-vercel/

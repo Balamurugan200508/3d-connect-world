@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "name": "entraiot-connect",
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/health",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/portfolio/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/way/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/buildings/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/",
+      "dest": "/server.js"
+    }
+  ]
+}

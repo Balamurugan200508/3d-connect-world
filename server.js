@@ -23,7 +23,7 @@ const fs       = require('fs');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app  = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const IS_PROD = process.env.NODE_ENV === 'production';
 
 // ─── Register extra MIME types ─────────────────────────────────────────────
@@ -111,8 +111,8 @@ app.use('/assets', express.static(path.join(STAGE1_DIR, 'assets'), staticOpts(tr
 // ─── Global Static Fallback ───────────────────────────────────────────────
 // If any file (like /temp.gltf) is requested at the root and missed by routes above,
 // try to serve it from STAGE3_DIST or STAGE1_DIR before returning 404.
-if (IS_PROD && fs.existsSync(STAGE3_DIST)) {
-  app.use(express.static(STAGE3_DIST, staticOpts(true)));
+if (IS_PROD && fs.existsSync(STAGE3_DIR)) {
+  app.use(express.static(STAGE3_DIR, staticOpts(true)));
 }
 app.use(express.static(STAGE1_DIR, staticOpts(true)));
 

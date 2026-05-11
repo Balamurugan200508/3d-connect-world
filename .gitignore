@@ -11,4 +11,6 @@ out
 .env.development.local
 .env.test.local
 .env.production.local
-
+dist-vercel/
+temp-deploy/
+*.har
