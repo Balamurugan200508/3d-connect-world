@@ -77,12 +77,46 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-// ─── Root ─────────────────────────────────────────────────────────────────
-app.get('/', (_req, res) => res.redirect('/way'));
+// ─── File Debug Route ─────────────────────────────────────────────────────
+app.get('/api/files', (req, res) => {
+  function getFiles(dir, fileList = []) {
+    if (!fs.existsSync(dir)) return [`${dir} does not exist`];
+    const files = fs.readdirSync(dir);
+    files.forEach(file => {
+      const name = path.join(dir, file);
+      if (fs.statSync(name).isDirectory()) {
+        getFiles(name, fileList);
+      } else {
+        fileList.push(name.replace(__dirname, ''));
+      }
+    });
+    return fileList;
+  }
+  res.json({
+    root: fs.readdirSync(__dirname),
+    dist: fs.existsSync(path.join(__dirname, 'dist-vercel')) ? fs.readdirSync(path.join(__dirname, 'dist-vercel')) : 'missing',
+    all_files: getFiles(path.join(__dirname, 'dist-vercel')).slice(0, 100) // first 100 files
+  });
+});
 
 const STAGE1_DIR = path.resolve(__dirname, 'dist-vercel', 'portfolio');
 const STAGE2_DIR = path.resolve(__dirname, 'dist-vercel', 'way');
 const STAGE3_DIR = path.resolve(__dirname, 'dist-vercel', 'buildings');
+
+// ─── Static Routes (Move to top) ──────────────────────────────────────────
+app.use('/portfolio', express.static(STAGE1_DIR, staticOpts(true)));
+app.use('/way', express.static(STAGE2_DIR, staticOpts(true)));
+app.use('/buildings', express.static(STAGE3_DIR, staticOpts(true)));
+app.use('/assets', express.static(path.join(STAGE1_DIR, 'assets'), staticOpts(true)));
+
+// ─── SPA Fallbacks ────────────────────────────────────────────────────────
+app.get('/portfolio/*', spaFallback(STAGE1_DIR));
+app.get('/way/*', spaFallback(STAGE2_DIR));
+app.get('/buildings/*', spaFallback(STAGE3_DIR));
+
+// ─── Root ─────────────────────────────────────────────────────────────────
+app.get('/', (_req, res) => res.redirect('/way'));
+app.get('/way', (req, res) => res.sendFile(path.join(STAGE2_DIR, 'index.html')));
 
 console.log('----------------------------------------------------');
 console.log('SERVER STARTING...');
@@ -101,25 +135,7 @@ if (fs.existsSync(STAGE2_DIR)) {
 
 console.log('----------------------------------------------------');
 
-// Stage 1
-app.use('/portfolio', express.static(STAGE1_DIR, staticOpts(true)));
-app.get('/portfolio/*', spaFallback(STAGE1_DIR));
-
-// Stage 2
-app.use('/way', express.static(STAGE2_DIR, staticOpts(true)));
-app.get('/way/*', spaFallback(STAGE2_DIR));
-
-// Stage 3
-app.use('/buildings', express.static(STAGE3_DIR, staticOpts(true)));
-app.get('/buildings/*', spaFallback(STAGE3_DIR));
-
-// Fallback for Stage 1 dynamic imports
-app.use('/assets', express.static(path.join(STAGE1_DIR, 'assets'), staticOpts(true)));
-
-
 // ─── Global Static Fallback ───────────────────────────────────────────────
-// If any file (like /temp.gltf) is requested at the root and missed by routes above,
-// try to serve it from STAGE3_DIST or STAGE1_DIR before returning 404.
 if (IS_PROD && fs.existsSync(STAGE3_DIR)) {
   app.use(express.static(STAGE3_DIR, staticOpts(true)));
 }
