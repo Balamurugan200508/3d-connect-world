@@ -9,6 +9,6 @@
     { "source": "/way", "destination": "/way/index.html" },
     { "source": "/buildings/(.*)", "destination": "/buildings/$1" },
     { "source": "/buildings", "destination": "/buildings/index.html" },
-    { "source": "/", "destination": "/index.html" }
+    { "source": "/", "destination": "/way/index.html" }
   ]
 }
