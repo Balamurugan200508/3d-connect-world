@@ -9,7 +9,7 @@
   "scripts": {
     "build:stage2": "cd stage2 && npm install && npm run build",
     "build:stage3": "echo 'Stage 3 is pre-built, skipping.'",
-    "build:prod": "cd stage2 && npm install && npm run build && cd .. && rm -rf dist-vercel && mkdir -p dist-vercel && cp -r stage1 dist-vercel/portfolio && mv stage2/out dist-vercel/way && cp -r stage3/dist dist-vercel/buildings && echo '<html><head><meta http-equiv=\"refresh\" content=\"0;url=/way/\"><script>window.location.href=\"/way/\"</script></head><body></body></html>' > dist-vercel/index.html",
+    "build:prod": "cd stage2 && npm install && npm run build && cd .. && rm -rf dist-vercel && mkdir -p dist-vercel/portfolio dist-vercel/way dist-vercel/buildings && cp -r stage1/* dist-vercel/portfolio/ && cp -r stage2/out/* dist-vercel/way/ && cp -r stage2/public/sequence dist-vercel/way/ && cp -r stage3/dist/* dist-vercel/buildings/ && echo '<html><head><meta http-equiv=\"refresh\" content=\"0;url=/way/\"><script>window.location.href=\"/way/\"</script></head><body></body></html>' > dist-vercel/index.html",
     "build": "npm run build:prod",
     "start": "cross-env NODE_ENV=production node server.js",
     "dev": "concurrently --names SERVER,NEXT,VITE --prefix-colors cyan,green,magenta \"node server.js\" \"cd stage2 && npm run dev -- --port 3001\" \"cd stage3 && npx vite --port 3002\""
