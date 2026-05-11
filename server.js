@@ -88,6 +88,7 @@ console.log('----------------------------------------------------');
 console.log('SERVER STARTING...');
 console.log('CWD:', process.cwd());
 console.log('DIRNAME:', __dirname);
+console.log('Files in root:', fs.readdirSync(__dirname));
 console.log('STAGE1_DIR:', STAGE1_DIR, 'Exists:', fs.existsSync(STAGE1_DIR));
 console.log('STAGE2_DIR:', STAGE2_DIR, 'Exists:', fs.existsSync(STAGE2_DIR));
 console.log('STAGE3_DIR:', STAGE3_DIR, 'Exists:', fs.existsSync(STAGE3_DIR));
