@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build:stage2": "cd stage2 && npm install && npm run build",
-    "build:stage3": "cd stage3 && npm install && npm run build",
+    "build:stage3": "echo 'Stage 3 is pre-built, skipping.'",
     "build:prod": "npm run build:stage2 && npm run build:stage3 && mkdir -p dist-vercel && cp -r stage1 dist-vercel/portfolio && cp -r stage2/out dist-vercel/way && cp -r stage3/dist dist-vercel/buildings && echo '<html><head><meta http-equiv=\"refresh\" content=\"0;url=/way\"></head></html>' > dist-vercel/index.html",
     "build": "npm run build:prod",
     "start": "cross-env NODE_ENV=production node server.js",
