@@ -80,16 +80,24 @@ app.get('/api/health', (_req, res) => {
 // ─── Root ─────────────────────────────────────────────────────────────────
 app.get('/', (_req, res) => res.redirect('/way'));
 
-const STAGE1_DIR = path.join(__dirname, 'dist-vercel', 'portfolio');
-const STAGE2_DIR = path.join(__dirname, 'dist-vercel', 'way');
-const STAGE3_DIR = path.join(__dirname, 'dist-vercel', 'buildings');
+const STAGE1_DIR = path.resolve(__dirname, 'dist-vercel', 'portfolio');
+const STAGE2_DIR = path.resolve(__dirname, 'dist-vercel', 'way');
+const STAGE3_DIR = path.resolve(__dirname, 'dist-vercel', 'buildings');
 
 console.log('----------------------------------------------------');
 console.log('SERVER STARTING...');
 console.log('CWD:', process.cwd());
-console.log('STAGE1_DIR:', STAGE1_DIR);
-console.log('STAGE2_DIR:', STAGE2_DIR);
-console.log('STAGE3_DIR:', STAGE3_DIR);
+console.log('DIRNAME:', __dirname);
+console.log('STAGE1_DIR:', STAGE1_DIR, 'Exists:', fs.existsSync(STAGE1_DIR));
+console.log('STAGE2_DIR:', STAGE2_DIR, 'Exists:', fs.existsSync(STAGE2_DIR));
+console.log('STAGE3_DIR:', STAGE3_DIR, 'Exists:', fs.existsSync(STAGE3_DIR));
+
+// Deep check for index.html
+if (fs.existsSync(STAGE2_DIR)) {
+  const indexPath = path.join(STAGE2_DIR, 'index.html');
+  console.log('STAGE2 index.html Exists:', fs.existsSync(indexPath));
+}
+
 console.log('----------------------------------------------------');
 
 // Stage 1
