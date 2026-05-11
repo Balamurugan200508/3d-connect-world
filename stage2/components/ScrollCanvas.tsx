@@ -39,7 +39,7 @@ const VismeEmbed = ({ url, formId, title }: { url: string; formId: string; title
   );
 };
 
-const FRAME_COUNT = 180;
+const FRAME_COUNT = 179;
 
 export default function ScrollCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -66,7 +66,7 @@ export default function ScrollCanvas() {
     const loadPromises = Array.from({ length: FRAME_COUNT }).map((_, i) => {
       return new Promise<HTMLImageElement>((resolve) => {
         const img = new Image();
-        img.src = `sequence/ezgif-frame-${String(i + 1).padStart(3, '0')}.png`;
+        img.src = `sequence/ezgif-frame-${String(i + 2).padStart(3, '0')}.png`;
         img.onload = () => {
           loaded++;
           setLoadProgress(Math.floor((loaded / FRAME_COUNT) * 100));
