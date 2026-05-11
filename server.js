@@ -80,166 +80,33 @@ app.get('/api/health', (_req, res) => {
 // ─── Root ─────────────────────────────────────────────────────────────────
 app.get('/', (_req, res) => res.redirect('/way'));
 
-// ══════════════════════════════════════════════════════════════════════════
-// STAGE 1 — pre-built static portfolio  →  /portfolio
-// ══════════════════════════════════════════════════════════════════════════
-const STAGE1_DIR = path.join(__dirname, 'stage1');
-const STAGE2_DIR = path.join(__dirname, 'stage2');
+const STAGE1_DIR = path.join(__dirname, 'dist-vercel', 'portfolio');
+const STAGE2_DIR = path.join(__dirname, 'dist-vercel', 'way');
+const STAGE3_DIR = path.join(__dirname, 'dist-vercel', 'buildings');
 
 console.log('----------------------------------------------------');
 console.log('SERVER STARTING...');
 console.log('CWD:', process.cwd());
-console.log('__dirname:', __dirname);
 console.log('STAGE1_DIR:', STAGE1_DIR);
+console.log('STAGE2_DIR:', STAGE2_DIR);
+console.log('STAGE3_DIR:', STAGE3_DIR);
 console.log('----------------------------------------------------');
 
+// Stage 1
 app.use('/portfolio', express.static(STAGE1_DIR, staticOpts(true)));
-app.get('/portfolio', spaFallback(STAGE1_DIR));
 app.get('/portfolio/*', spaFallback(STAGE1_DIR));
 
-// Fallback for Stage 1 dynamic imports that request /assets/* instead of /portfolio/assets/*
+// Stage 2
+app.use('/way', express.static(STAGE2_DIR, staticOpts(true)));
+app.get('/way/*', spaFallback(STAGE2_DIR));
+
+// Stage 3
+app.use('/buildings', express.static(STAGE3_DIR, staticOpts(true)));
+app.get('/buildings/*', spaFallback(STAGE3_DIR));
+
+// Fallback for Stage 1 dynamic imports
 app.use('/assets', express.static(path.join(STAGE1_DIR, 'assets'), staticOpts(true)));
 
-// ══════════════════════════════════════════════════════════════════════════
-// STAGE 2 — Next.js standalone bike scrollytelling  →  /way
-// ══════════════════════════════════════════════════════════════════════════
-const NEXT_STANDALONE = path.join(__dirname, 'stage2', '.next', 'standalone');
-const NEXT_STATIC     = path.join(__dirname, 'stage2', '.next', 'static');
-const NEXT_PUBLIC     = path.join(__dirname, 'stage2', 'public');
-const NEXT_PORT       = 3001;
-
-if (IS_PROD && fs.existsSync(NEXT_STANDALONE)) {
-  // Spawn Next.js standalone server as a child process
-  const { spawn } = require('child_process');
-  
-  function findServerJs(dir) {
-    if (!fs.existsSync(dir)) return null;
-    const items = fs.readdirSync(dir);
-    for (const item of items) {
-      const fullPath = path.join(dir, item);
-      if (fs.statSync(fullPath).isDirectory()) {
-        if (item === 'node_modules' || item === '.next') continue;
-        const found = findServerJs(fullPath);
-        if (found) return found;
-      } else if (item === 'server.js') {
-        return fullPath;
-      }
-    }
-    return null;
-  }
-
-  let nextServerPath = path.join(NEXT_STANDALONE, 'server.js');
-  if (!fs.existsSync(nextServerPath)) {
-    const found = findServerJs(NEXT_STANDALONE);
-    if (found) {
-      nextServerPath = found;
-    } else {
-      console.error('[Stage 2] Could not find Next.js server.js in standalone directory!');
-    }
-  }
-
-  const nextServer = spawn(
-    process.execPath,
-    [nextServerPath],
-    {
-      env: {
-        ...process.env,
-        PORT: String(NEXT_PORT),
-        HOSTNAME: '127.0.0.1',
-        NODE_ENV: 'production',
-      },
-      stdio: ['ignore', 'pipe', 'pipe'],
-    }
-  );
-  nextServer.stdout.on('data', d => process.stdout.write(`[Stage 2] ${d}`));
-  nextServer.stderr.on('data', d => process.stderr.write(`[Stage 2] ${d}`));
-  nextServer.on('error', (err) => console.error('[Stage 2] Next.js failed to start:', err));
-  process.on('exit', () => nextServer.kill());
-  process.on('SIGINT', () => { nextServer.kill(); process.exit(0); });
-  process.on('SIGTERM', () => { nextServer.kill(); process.exit(0); });
-
-  // Serve Next.js static files directly (since standalone doesn't include them)
-  app.use('/way/_next/static', express.static(NEXT_STATIC, staticOpts()));
-  app.use('/way', express.static(NEXT_PUBLIC, staticOpts(true)));
-
-  // Register proxy immediately — it handles connection retries automatically.
-  // Express strips /way before forwarding, so pathRewrite re-adds it.
-  // Next.js was built with basePath=/way so it needs the full prefix.
-  app.use('/way', createProxyMiddleware({
-    target: `http://127.0.0.1:${NEXT_PORT}`,
-    changeOrigin: true,
-    ws: true,
-    pathRewrite: (reqPath) => reqPath === '/' ? '/way' : '/way' + reqPath,
-    on: {
-      error(err, req, res) {
-        console.error('[Stage 2 proxy error]', err.message);
-        if (!res.headersSent) {
-          res.status(502).json({ error: 'Stage 2 (Next.js) is starting up — retry in a moment.' });
-        }
-      }
-    }
-  }));
-
-} else if (!IS_PROD) {
-  // Dev: proxy to next dev server (run separately with: cd stage2 && npm run dev)
-  app.use('/way', createProxyMiddleware({
-    target: `http://127.0.0.1:${NEXT_PORT}`,
-    changeOrigin: true,
-    ws: true,
-    pathRewrite: (path) => path === '/' ? '/way' : '/way' + path,
-    on: {
-      error(err, req, res) {
-        if (!res.headersSent) {
-          res.status(502).json({
-            error: 'Stage 2 Next.js dev server not running.',
-            hint: `cd stage2 && npm run dev -- --port ${NEXT_PORT}`
-          });
-        }
-      }
-    }
-  }));
-} else {
-  // Prod but no standalone build — serve static export fallback
-  const NEXT_OUT = path.join(__dirname, 'stage2', 'out');
-  if (fs.existsSync(NEXT_OUT)) {
-    app.use('/way', express.static(NEXT_OUT, staticOpts()));
-    app.get('/way/*', spaFallback(NEXT_OUT));
-  } else {
-    app.use('/way', (_req, res) =>
-      res.status(503).json({ error: 'Stage 2 not built. Run: cd stage2 && npm run build' })
-    );
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════════════
-// STAGE 3 — Vite 3D buildings  →  /buildings
-// ══════════════════════════════════════════════════════════════════════════
-const STAGE3_DIST = path.join(__dirname, 'stage3', 'dist');
-const VITE_PORT   = 3002;
-
-if (IS_PROD && fs.existsSync(STAGE3_DIST)) {
-  app.use('/buildings', express.static(STAGE3_DIST, staticOpts(true)));
-  app.get('/buildings', spaFallback(STAGE3_DIST));
-  app.get('/buildings/*', spaFallback(STAGE3_DIST));
-} else {
-  // Dev: proxy to Vite dev server
-  app.use('/buildings', createProxyMiddleware({
-    target: `http://127.0.0.1:${VITE_PORT}`,
-    changeOrigin: true,
-    ws: true,
-    pathRewrite: { '^/buildings': '' },
-    on: {
-      error(err, req, res) {
-        if (!res.headersSent) {
-          res.status(502).json({
-            error: 'Stage 3 Vite dev server not running.',
-            hint: `cd stage3 && npx vite --port ${VITE_PORT}`
-          });
-        }
-      }
-    }
-  }));
-}
 
 // ─── Global Static Fallback ───────────────────────────────────────────────
 // If any file (like /temp.gltf) is requested at the root and missed by routes above,
