@@ -66,7 +66,7 @@ export default function ScrollCanvas() {
     const loadPromises = Array.from({ length: FRAME_COUNT }).map((_, i) => {
       return new Promise<HTMLImageElement>((resolve) => {
         const img = new Image();
-        img.src = `/way/sequence/ezgif-frame-${String(i + 1).padStart(3, '0')}.png`;
+        img.src = `sequence/ezgif-frame-${String(i + 1).padStart(3, '0')}.png`;
         img.onload = () => {
           loaded++;
           setLoadProgress(Math.floor((loaded / FRAME_COUNT) * 100));
