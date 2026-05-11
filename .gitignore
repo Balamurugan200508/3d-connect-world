@@ -2,7 +2,8 @@ node_modules
 .next
 .DS_Store
 out
-dist/
+# dist/
+!stage3/dist/
 *.bak
 *.log
 .env
